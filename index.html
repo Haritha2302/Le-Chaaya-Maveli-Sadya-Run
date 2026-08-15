@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Maveli's Sadya Run — Le Chaaya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --leaf:#3E8C4E;--leaf-hi:#5CB268;--leaf-lo:#225A2F;
+  --sand:#F2E1B8;--sand-lo:#DCC392;
+  --marigold:#EF9F32;--marigold-lo:#D07A1C;
+  --maroon:#8E2F3B;--gold:#D9A441;--gold-hi:#F0C766;
+  --ink:#33200F;--ink-soft:#6B4A2C;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  min-height:100dvh;
+  background:radial-gradient(120% 80% at 50% 0%,#FBC46A 0%,var(--marigold) 45%,var(--marigold-lo) 100%);
+  font-family:'Nunito','Trebuchet MS',system-ui,sans-serif;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;padding:12px 10px 18px;
+}
+.wrap{width:100%;max-width:430px}
+.banner{display:none;align-items:center;justify-content:space-between;gap:9px;
+  background:linear-gradient(180deg,#FFF6E2,#F2E1B8);border-radius:14px;padding:8px 9px 8px 13px;
+  margin-bottom:9px;box-shadow:0 3px 0 var(--sand-lo),0 7px 14px rgba(90,40,10,.25)}
+.banner.on{display:flex}
+.banner span{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.3}
+.banner b{color:var(--maroon)}
+.banner button{border:0;border-radius:99px;padding:8px 14px;font-family:'Baloo 2',sans-serif;
+  font-weight:800;font-size:12.5px;white-space:nowrap;cursor:pointer;
+  background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#4A2708;box-shadow:0 3px 0 #A87A22}
+.masthead{text-align:center;margin-bottom:8px}
+.masthead h1{
+  font-family:'Baloo 2','Trebuchet MS',system-ui,sans-serif;font-weight:800;
+  font-size:clamp(23px,6.8vw,33px);line-height:1;margin:0;color:#FFF6E2;
+  text-shadow:0 2px 0 var(--maroon),0 5px 12px rgba(80,30,10,.35);
+}
+.masthead p{margin:4px 0 0;font-size:10.5px;font-weight:800;letter-spacing:2.2px;text-transform:uppercase;color:#7A3410}
+.hud{display:flex;gap:7px;margin-bottom:8px}
+.stat{flex:1;background:linear-gradient(180deg,#FFF6E2,#F2E1B8);border-radius:15px;padding:6px 5px 7px;
+  text-align:center;box-shadow:0 3px 0 var(--sand-lo),0 7px 14px rgba(90,40,10,.22)}
+.stat b{display:block;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:18px;line-height:1.05;color:var(--maroon)}
+.stat span{display:block;font-size:8.6px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--ink-soft);margin-top:2px}
+.stage{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,var(--leaf-lo),#1B4726);
+  padding:8px;box-shadow:0 5px 0 #163A1F,0 14px 26px rgba(60,25,5,.4);touch-action:none}
+#board{display:block;width:100%;height:auto;border-radius:13px}
+.shake{animation:sh .26s ease}
+@keyframes sh{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+#maveli{transition:transform .28s cubic-bezier(.34,.05,.2,1)}
+.pop{animation:pop .34s ease forwards}
+@keyframes pop{0%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:1}100%{transform:scale(.15);opacity:0}}
+.ready{animation:glow 1.5s ease-in-out infinite}
+@keyframes glow{0%,100%{opacity:.35}50%{opacity:.95}}
+
+.toast{position:absolute;left:50%;bottom:12px;transform:translateX(-50%) translateY(8px);
+  background:rgba(30,16,6,.93);border:2px solid rgba(255,225,150,.45);color:#FFE9A8;
+  padding:8px 17px;border-radius:99px;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .18s,transform .18s;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast b{display:block;font-family:'Baloo 2',sans-serif;font-weight:800;font-size:16px;line-height:1.1}
+.toast i{display:block;font-style:normal;font-size:10.5px;font-weight:700;color:#B8D9BC;margin-top:1px}
+
+.overlay.full{position:fixed;inset:0;z-index:60;border-radius:0;
+  padding:max(16px,env(safe-area-inset-top)) 18px max(16px,env(safe-area-inset-bottom));gap:9px}
+.overlay.full h2{font-size:clamp(19px,5.4vw,24px)}
+.overlay.full .big{font-size:clamp(32px,9vw,40px)}
+.overlay.full .btn{padding:10px 20px;font-size:15px}
+.overlay{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;text-align:center;background:rgba(24,56,30,.96);padding:18px 16px;overflow-y:auto}
+.overlay.on{display:flex}
+.overlay h2{font-family:'Baloo 2',sans-serif;font-weight:800;margin:0;font-size:clamp(19px,5.5vw,25px);color:#FFE9A8;line-height:1.15}
+.overlay p{margin:0;font-size:13px;color:#DDF0DC;max-width:32ch;line-height:1.5;font-weight:600}
+.eyebrow{font-size:10px;font-weight:800;letter-spacing:2.6px;text-transform:uppercase;color:#8FC796}
+.big{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:42px;color:#FFF6E2;line-height:1}
+.big em{font-style:normal;font-size:16px;color:#9FD3A4;display:block;margin-top:2px}
+.menu{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-width:33ch}
+.rules{display:flex;flex-direction:column;gap:9px;width:100%;max-width:33ch;margin:2px 0}
+.rules div{display:flex;align-items:center;gap:11px;text-align:left}
+.rules svg{flex:0 0 42px;width:42px;height:42px}
+.rules p{font-size:12.5px;margin:0;max-width:none}
+.rules b{color:#FFE9A8}
+.menu span{background:rgba(255,240,200,.12);border:1px solid rgba(255,225,150,.3);border-radius:99px;
+  padding:4px 10px;font-size:11px;font-weight:700;color:#FFE9A8}
+.btn{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:16px;border:0;border-radius:99px;padding:11px 26px;
+  cursor:pointer;background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#4A2708;
+  box-shadow:0 4px 0 #A87A22,0 8px 16px rgba(0,0,0,.3)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #A87A22}
+.btn.ghost{background:rgba(255,255,255,.14);color:#FFF0CE;box-shadow:0 3px 0 rgba(0,0,0,.22)}
+.code{background:#FFF6E2;color:#5B2A10;border-radius:13px;padding:9px 16px;font-family:'Baloo 2',monospace;
+  font-weight:800;font-size:21px;letter-spacing:2.5px;box-shadow:0 4px 0 #C9A05A}
+.row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.clock{font-family:'Baloo 2',monospace;font-weight:800;font-size:31px;letter-spacing:3px;
+  color:#FFF6E2;background:rgba(0,0,0,.3);border-radius:12px;padding:5px 18px}
+.hook{background:rgba(255,240,200,.13);border:2px dashed rgba(255,225,150,.5);border-radius:13px;
+  padding:9px 12px;font-size:12px;color:#FFE9A8;font-weight:700;line-height:1.45;max-width:33ch}
+.handle{font-size:10.5px;letter-spacing:2.2px;text-transform:uppercase;color:#8FC796;font-weight:800}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
+.pad{display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(2,40px);gap:5px}
+.pad button{border:0;border-radius:12px;background:rgba(255,246,226,.9);color:var(--maroon);font-size:16px;
+  font-weight:800;cursor:pointer;box-shadow:0 3px 0 rgba(120,60,20,.4)}
+.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(120,60,20,.4)}
+.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .d{grid-area:2/2}.pad .r{grid-area:2/3}
+.mini{display:flex;flex-direction:column;gap:6px}
+.mini button{border:0;border-radius:12px;padding:8px 12px;font-size:11px;font-weight:800;letter-spacing:.6px;
+  text-transform:uppercase;cursor:pointer;background:rgba(255,246,226,.9);color:var(--ink-soft);
+  box-shadow:0 3px 0 rgba(120,60,20,.35)}
+.legend{margin-top:8px;text-align:center;font-size:11px;font-weight:700;color:#7A3410;line-height:1.5}
+.leafwrap{width:min(300px,74vw)}
+@media (prefers-reduced-motion:reduce){#maveli{transition:none}.pop{animation:none;opacity:0}.shake,.ready{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner" id="banner">
+    <span><b>Free unniyappam</b> waiting for you</span>
+    <button id="btnBanner">Show at counter</button>
+  </div>
+
+  <div class="masthead"><h1>Maveli's Sadya Run</h1><p>Le Chaaya · Onam 2026</p></div>
+
+  <div class="hud">
+    <div class="stat"><b id="hLevel">1/5</b><span>Course</span></div>
+    <div class="stat"><b id="hMoves">0</b><span>Moves</span></div>
+    <div class="stat"><b id="hDish">0/2</b><span>Dishes</span></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <svg id="board" viewBox="0 0 700 700" aria-label="Maze"></svg>
+    <div class="toast" id="toast"></div>
+
+    <div class="overlay on" id="ovIntro">
+      <h2>Maveli's late for the sadya</h2>
+      <p><b>Swipe in any direction.</b> Maveli keeps sliding until something gets in the way — no stopping halfway.</p>
+      <div class="rules" id="rules"></div>
+      <p>Five courses, 26 dishes. <b>Fewest moves wins</b> — the shortest run possible is 114.</p>
+      <button class="btn" id="btnStart">Start the run</button>
+    </div>
+
+    <div class="overlay" id="ovSection">
+      <div class="eyebrow" id="secNum">Course 1 of 5</div>
+      <h2 id="secTitle"></h2>
+      <p id="secDesc"></p>
+      <div class="menu" id="secMenu"></div>
+      <button class="btn" id="btnBegin">Serve it</button>
+    </div>
+
+    <div class="overlay" id="ovDone">
+      <h2 id="lvTitle">Leaf full</h2>
+      <div class="big" id="lvStat"></div>
+      <p id="lvNote"></p>
+      <button class="btn" id="btnNext">Next course</button>
+    </div>
+
+    <div class="overlay full" id="ovEnd">
+      <h2 id="endTitle">Sadya served</h2>
+      <div class="leafwrap"><svg id="leaf" viewBox="0 0 340 216"></svg></div>
+      <div class="big" id="endStat"></div>
+      <p id="endNote"></p>
+      <div class="hook" id="endHook"></div>
+      <div class="row">
+        <button class="btn" id="btnShare">Share score</button>
+        <button class="btn" id="btnClaim" style="display:none">Claim</button>
+        <button class="btn ghost" id="btnAgain">Play again</button>
+      </div>
+      <div class="handle" id="handle">@lechaaya</div>
+    </div>
+
+    <div class="overlay full" id="ovClaim">
+      <div class="eyebrow">Show this at the counter</div>
+      <div class="code" id="claimCode"></div>
+      <div class="clock" id="claimClock">00:00:00</div>
+      <p class="eyebrow" id="claimDate"></p>
+      <div class="hook">Free unniyappam <b>with any order</b>. One per person per day.</div>
+      <p><b>Staff:</b> the clock must be <b>ticking</b>. A screenshot is frozen.</p>
+      <div class="row">
+        <button class="btn" id="btnUsed">Mark used</button>
+        <button class="btn ghost" id="btnBack">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="pad">
+      <button class="u" data-d="U" aria-label="Up">▲</button>
+      <button class="l" data-d="L" aria-label="Left">◀</button>
+      <button class="d" data-d="D" aria-label="Down">▼</button>
+      <button class="r" data-d="R" aria-label="Right">▶</button>
+    </div>
+    <div class="mini">
+      <button id="btnReset">Restart course</button>
+      <button id="btnSound">Sound: on</button>
+    </div>
+  </div>
+  <div class="legend">Swipe the board, use arrow keys, or tap the pad.</div>
+</div>
+
+<script>
+/* ============ Edit these two ============ */
+const PRIZE_MOVES = 125;        // finish at or under this and a code is issued
+const HANDLE      = '@lechaaya';
+const GAME_URL    = 'https://lechaaya.com/sadya';   // where you host this file
+/* ======================================== */
+
+/* Levels: verified full-clear, no softlocks, and never more than one dish per slide */
+const LEVELS=[
+["#######","#.....#","##..do#","#o....#","#.o.#S#","#.M.d.#","#######"],
+["########","##.od..#","#...o#d#","#d...#.#","#.oo.#M#","#.S..#.#","#o##od.#","########"],
+["##########","#.#.#.d.##","#o#.###..#","#dS..d#o.#","#o.#..#d.#","#.o.#.o.o#","#.o#..d..#","#.#.d##o##","#..M##..##","##########"],
+["###########","#.d##o#.###","#.#..#.#..#","#...#d....#","#d...#o.M.#","##...#...##","##.....d#o#","#.d...o..##","#.....o#od#","#S..#...#o#","###########"],
+["###########","#.d#d...###","#.#....M#.#","#...###.d.#","##.#...oo.#","#....d.##d#","#...S#.o..#","##.#.o....#","#o..dd#.o.#","#d..#.##o.#","###########"]
+];
+const PAR=[6,13,21,34,40];
+const TOTAL_PAR=114;
+
+/* The five courses of a sadya, in the order they hit the leaf */
+const COURSES=[
+ {t:"The tip of the leaf",
+  d:"Every sadya starts here. Pickles go at the narrow tip, in tiny amounts — they're there to wake the tongue up, not to be eaten on their own.",
+  items:[["Injipuli","#5C3218","lump","ginger, tamarind, jaggery"],
+         ["Manga achar","#B4432A","lump","raw mango pickle"]]},
+ {t:"Upperi — the crunch",
+  d:"Fried and set along the top edge. You eat these with your fingers, all through the meal, whenever the rice gets too serious.",
+  items:[["Pappadam","#F0D89A","disc","cracked over the rice"],
+         ["Kaya upperi","#EFC24E","pile","banana chips in coconut oil"],
+         ["Sharkara varatti","#8A5220","lump","jaggery-coated banana"],
+         ["Chena varuthathu","#C79A44","pile","fried yam"]]},
+ {t:"The vegetable curries",
+  d:"The body of the meal, laid across the top of the leaf. Mostly coconut and curd, barely any chilli — each one a different texture.",
+  items:[["Thoran","#6FA84A","pile","dry, with grated coconut"],
+         ["Mezhukkupuratti","#4E8C3A","pile","stir-fried, glossy"],
+         ["Avial","#C9D98E","bowl","the famous mixed one"],
+         ["Olan","#E8E4C8","bowl","ash gourd in coconut milk"],
+         ["Erissery","#D89A3E","bowl","pumpkin and beans"],
+         ["Kaalan","#EBD07A","bowl","curd, thick and sour"]]},
+ {t:"Choru, and what's poured on it",
+  d:"Rice lands in the middle and the curries go over it in strict order — parippu with ghee first, then sambar, then rasam, then pulissery. Never out of turn.",
+  items:[["Choru","#FBF3DE","pile","the rice itself"],
+         ["Neyy","#F5D96B","lump","ghee, over the parippu"],
+         ["Parippu","#E8B93C","bowl","dal, served first"],
+         ["Sambar","#C4622C","bowl","second, with vegetables"],
+         ["Rasam","#B03A28","bowl","third, thin and peppery"],
+         ["Pulissery","#F2E6C2","bowl","fourth, curd-based"]]},
+ {t:"Payasam — the sweet end",
+  d:"Served on the same leaf, pushed to a clean corner. Two or three is normal. Eight is showing off, which is exactly the point.",
+  items:[["Ada pradhaman","#7A4426","bowl","rice ada in jaggery"],
+         ["Palada payasam","#F3DCC0","bowl","milk and ada"],
+         ["Parippu pradhaman","#B5762E","bowl","moong dal and jaggery"],
+         ["Chakka pradhaman","#C98A2E","bowl","jackfruit"],
+         ["Pal payasam","#FBF0DC","bowl","slow-cooked milk rice"],
+         ["Semiya payasam","#F6E3C4","bowl","vermicelli"],
+         ["Pazham","#F2C230","lump","banana, to mash into it"],
+         ["Boli","#EFD07E","disc","soft, sweet, folded"]]}
+];
+
+let li=0,grid=[],dishes=new Map(),pos={r:0,c:0},goal={r:0,c:0};
+let lvMoves=0,lvGot=0,lvTotal=0,totalMoves=0;
+let busy=false,started=false,sound=true;
+const $=id=>document.getElementById(id);
+
+/* ---------- audio ---------- */
+let ac=null;
+const actx=()=>ac||(ac=new (window.AudioContext||window.webkitAudioContext)());
+function beep(f,d,t,v,sl){
+  if(!sound)return;
+  try{const a=actx(),o=a.createOscillator(),g=a.createGain();
+    o.type=t||'sine';o.frequency.setValueAtTime(f,a.currentTime);
+    if(sl)o.frequency.exponentialRampToValueAtTime(sl,a.currentTime+d);
+    g.gain.setValueAtTime(v||.16,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0008,a.currentTime+d);
+    o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+d);}catch(e){}
+}
+const sThud =()=>beep(105,.16,'sine',.3,62);
+const sSlide=()=>beep(300,.09,'triangle',.05,420);
+const sDish =n=>beep(560+n*38,.22,'triangle',.17,940+n*38);
+const sStick=()=>beep(180,.15,'sine',.14,115);
+const sOpen =()=>[659,880].forEach((f,i)=>setTimeout(()=>beep(f,.3,'triangle',.14),i*110));
+const sWin  =()=>[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.26,'triangle',.15),i*95));
+const sFinal=()=>[392,523,659,784,1046,1318].forEach((f,i)=>setTimeout(()=>beep(f,.34,'triangle',.16),i*115));
+
+/* ---------- art primitives ---------- */
+function dishBlock(x,y,s,col){          /* x,y = centre */
+  const h=22*s;
+  return `<rect x="${x-h}" y="${y-h}" width="${h*2}" height="${h*2}" rx="${4*s}"
+           fill="${col}" stroke="#2E1C0C" stroke-width="${3.4*s}" stroke-linejoin="round"/>
+    <rect x="${x-h+5*s}" y="${y-h+5*s}" width="${h*2-10*s}" height="${4*s}" rx="${2*s}"
+           fill="#FFFFFF" opacity=".26"/>`;
+}
+function payasamSpill(x,y,s){
+  const P=(a,b)=>`${x+a*s} ${y+b*s}`;
+  return `<path d="M${P(-34,3)} C${P(-37,-9)} ${P(-21,-17)} ${P(-6,-14)}
+      C${P(7,-19)} ${P(27,-16)} ${P(33,-5)} C${P(39,5)} ${P(27,15)} ${P(11,16)}
+      C${P(-3,19)} ${P(-25,16)} ${P(-34,3)}Z"
+      fill="#F7EBD2" stroke="#C6A268" stroke-width="${2.8*s}"/>
+    <ellipse cx="${x-13*s}" cy="${y+18*s}" rx="${7*s}" ry="${4*s}" fill="#F7EBD2" stroke="#C6A268" stroke-width="${2.2*s}"/>
+    <ellipse cx="${x+22*s}" cy="${y+15*s}" rx="${5*s}" ry="${3.2*s}" fill="#F7EBD2" stroke="#C6A268" stroke-width="${2*s}"/>
+    <path d="M${P(-20,-3)} C${P(-13,-11)} ${P(-2,-12)} ${P(5,-8)}"
+      stroke="#FFFFFF" stroke-width="${5*s}" stroke-linecap="round" fill="none" opacity=".92"/>`;
+}
+let LEAFID=0;
+function bananaLeaf(cx,cy,w,h,extra,taper){
+  /* tapered like a real served leaf: narrow stem end on the left, broad on the right */
+  const id='lf'+(LEAFID++), t=(taper===undefined?0.72:taper);
+  const hl=h*t/2, hr=h/2, x0=cx-w/2, x1=cx+w/2, r=Math.min(h*0.14,w*0.06);
+  const path=`M${x0+r} ${cy-hl} L${x1-r} ${cy-hr} Q${x1} ${cy-hr} ${x1} ${cy-hr+r}
+    L${x1} ${cy+hr-r} Q${x1} ${cy+hr} ${x1-r} ${cy+hr} L${x0+r} ${cy+hl}
+    Q${x0} ${cy+hl} ${x0} ${cy+hl-r} L${x0} ${cy-hl+r} Q${x0} ${cy-hl} ${x0+r} ${cy-hl}Z`;
+  let veins='';
+  const n=Math.max(5,Math.round(w/(h*0.15)));
+  for(let i=1;i<n;i++){
+    const f=i/n, vx=x0+f*w, hh=hl+(hr-hl)*f;
+    veins+=`<path d="M${vx} ${cy} l${hh*0.36} ${-hh*0.95}" stroke="#1C5027" stroke-width="${h*0.014}" opacity=".32"/>
+            <path d="M${vx} ${cy} l${hh*0.36} ${hh*0.95}" stroke="#1C5027" stroke-width="${h*0.014}" opacity=".32"/>`;
+  }
+  return `<clipPath id="${id}"><path d="${path}"/></clipPath>
+    <path d="${path}" fill="url(#gl)"/>
+    <g clip-path="url(#${id})">${veins}</g>
+    <path d="M${x0+r*1.4} ${cy} H${x1-r*1.2}" stroke="#1C5027" stroke-width="${h*0.05}"
+      opacity=".7" stroke-linecap="round"/>${extra||""}`;
+}
+function maveliSVG(){
+  return `<ellipse cx="52" cy="84" rx="30" ry="9" fill="#8A6A38" opacity=".38"/>
+    <ellipse cx="50" cy="66" rx="31" ry="24" fill="#E9D3A0"/>
+    <ellipse cx="50" cy="63" rx="28" ry="21" fill="#FFF6E2"/>
+    <path d="M22 70 Q50 82 78 70 Q50 78 22 70Z" fill="#D9A441"/>
+    <ellipse cx="39" cy="55" rx="10" ry="7" fill="#FFFFFF" opacity=".65"/>
+    <circle cx="50" cy="35" r="19" fill="#C98B52"/><circle cx="50" cy="33" r="17" fill="#DFA469"/>
+    <ellipse cx="43" cy="27" rx="6" ry="4" fill="#FFFFFF" opacity=".4"/>
+    <circle cx="43" cy="34" r="2.6" fill="#2A1B10"/><circle cx="57" cy="34" r="2.6" fill="#2A1B10"/>
+    <path d="M36 43 Q43 36 50 43 Q57 36 64 43 Q57 49 50 44 Q43 49 36 43Z" fill="#2A1B10"/>
+    <path d="M32 20 L36 6 L43 14 L50 3 L57 14 L64 6 L68 20Z" fill="url(#gc)"/>
+    <circle cx="50" cy="9" r="3.4" fill="#B03A28"/>`;
+}
+
+/* ---------- level loading ---------- */
+function load(n){
+  li=n;grid=LEVELS[n].map(r=>r.split(''));dishes=new Map();
+  let k=0;
+  for(let r=0;r<grid.length;r++)for(let c=0;c<grid[r].length;c++){
+    const ch=grid[r][c];
+    if(ch==='M'){pos={r,c};grid[r][c]='.';}
+    else if(ch==='S'){goal={r,c};}
+    else if(ch==='d'){dishes.set(r+','+c,k);k++;grid[r][c]='.';}
+  }
+  lvTotal=k;lvGot=0;lvMoves=0;draw();hud();
+}
+function showSection(n){
+  const C=COURSES[n];
+  $('secNum').textContent=`Course ${n+1} of 5`;
+  $('secTitle').textContent=C.t;
+  $('secDesc').textContent=C.d;
+  $('secMenu').innerHTML=C.items.map(i=>`<span>${i[0]}</span>`).join('');
+  $('ovSection').classList.add('on');
+}
+
+/* ---------- drawing ---------- */
+function draw(){
+  const H=grid.length,W=grid[0].length,S=100,b=$('board');
+  const items=COURSES[li].items;
+  b.setAttribute('viewBox',`0 0 ${W*S} ${H*S}`);
+  let s=`<defs>
+   <linearGradient id="gw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5CB268"/><stop offset="1" stop-color="#2C6B39"/></linearGradient>
+   <linearGradient id="gf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6E9C6"/><stop offset="1" stop-color="#E4CE9C"/></linearGradient>
+   <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#63BC6E"/><stop offset="1" stop-color="#2F7C3E"/></linearGradient>
+   <linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5CE71"/><stop offset="1" stop-color="#C58F24"/></linearGradient>
+   <linearGradient id="gp" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFBF0"/><stop offset="1" stop-color="#E8D2A6"/></linearGradient>
+   <filter id="sh" x="-45%" y="-45%" width="190%" height="190%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#20130A" flood-opacity=".34"/></filter>
+   <filter id="shS" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-color="#20130A" flood-opacity=".32"/></filter>
+  </defs>`;
+  s+=`<rect width="${W*S}" height="${H*S}" fill="#E4CE9C" rx="14"/>`;
+
+  for(let r=0;r<H;r++)for(let c=0;c<W;c++){
+    if(grid[r][c]==='#')continue;
+    s+=`<rect x="${c*S+3}" y="${r*S+3}" width="${S-6}" height="${S-6}" rx="13" fill="url(#gf)"/>`;
+  }
+  for(let r=0;r<H;r++)for(let c=0;c<W;c++){
+    if(grid[r][c]!=='o')continue;
+    s+=`<g filter="url(#shS)">${payasamSpill(c*S+50,r*S+52,1)}</g>`;
+  }
+  for(let r=0;r<H;r++)for(let c=0;c<W;c++){
+    if(grid[r][c]!=='#')continue;
+    const x=c*S,y=r*S;
+    s+=`<g filter="url(#sh)"><rect x="${x+2}" y="${y+2}" width="${S-4}" height="${S-4}" rx="19" fill="url(#gw)"/>
+      <rect x="${x+11}" y="${y+10}" width="${S-22}" height="20" rx="10" fill="#7ECB86" opacity=".55"/>
+      <rect x="${x+16}" y="${y+62}" width="${S-32}" height="12" rx="6" fill="#1F5029" opacity=".4"/></g>`;
+  }
+  {
+    const x=goal.c*S,y=goal.r*S,full=lvGot>=lvTotal;
+    let plate='';
+    for(let i=0;i<lvGot;i++){
+      const cols=Math.min(lvTotal,4),row=Math.floor(i/cols),rowN=Math.ceil(lvTotal/cols);
+      const inRow=Math.min(cols,lvTotal-row*cols),k=i-row*cols;
+      const px=x+50+(k-(inRow-1)/2)*17, py=y+50+(row-(rowN-1)/2)*16;
+      plate+=`<rect x="${px-6}" y="${py-6}" width="12" height="12" rx="2.5"
+               fill="${items[i][1]}" stroke="#1C5027" stroke-width="1.6"/>`;
+    }
+    s+=`<g filter="url(#sh)">${bananaLeaf(x+50,y+50,92,62,plate)}`;
+    s+= full
+      ? `<ellipse class="ready" cx="${x+50}" cy="${y+50}" rx="49" ry="35" fill="none" stroke="#FFE9A8" stroke-width="5"/>`
+      : `<circle cx="${x+50}" cy="${y+50}" r="14" fill="#123A1B" opacity=".62"/>
+         <rect x="${x+45}" y="${y+46}" width="10" height="11" rx="2.5" fill="#FFE9A8"/>
+         <path d="M${x+46.5} ${y+46} v-3.5 a3.5 3.5 0 0 1 7 0 v3.5" stroke="#FFE9A8" stroke-width="2.4" fill="none"/>`;
+    s+=`</g>`;
+  }
+  for(const [key,idx] of dishes){
+    const [r,c]=key.split(',').map(Number),D=items[idx];
+    s+=`<g class="dish" data-k="${key}" filter="url(#shS)" style="transform-origin:${c*S+50}px ${r*S+50}px">
+      ${dishBlock(c*S+50,r*S+50,1,D[1])}</g>`;
+  }
+  s+=`<g id="maveli" style="transform:translate(${pos.c*S}px,${pos.r*S}px)">${maveliSVG()}</g>`;
+  b.innerHTML=s;
+}
+
+function hud(){
+  $('hLevel').textContent=(li+1)+'/5';
+  $('hMoves').textContent=totalMoves+lvMoves;
+  $('hDish').textContent=lvGot+'/'+lvTotal;
+}
+let tt;
+function toast(name,sub){
+  const t=$('toast');
+  t.innerHTML=sub?`<b>${name}</b><i>${sub}</i>`:`<b>${name}</b>`;
+  t.classList.add('on');clearTimeout(tt);
+  tt=setTimeout(()=>t.classList.remove('on'),sub?2100:1300);
+}
+
+/* ---------- movement ---------- */
+const DIRS={U:[-1,0],D:[1,0],L:[0,-1],R:[0,1]};
+function move(d){
+  if(busy||!started)return;
+  const [dr,dc]=DIRS[d];let{r,c}=pos,steps=0,got=null,stuck=false;
+  while(true){
+    const nr=r+dr,nc=c+dc;
+    if(nr<0||nc<0||nr>=grid.length||nc>=grid[0].length||grid[nr][nc]==='#')break;
+    r=nr;c=nc;steps++;
+    const k=r+','+c;
+    if(dishes.has(k)){got=[k,dishes.get(k)];dishes.delete(k);}
+    if(grid[r][c]==='o'){stuck=true;break;}
+    if(r===goal.r&&c===goal.c)break;
+  }
+  if(steps===0){sThud();const st=$('stage');st.classList.add('shake');setTimeout(()=>st.classList.remove('shake'),280);return;}
+
+  busy=true;pos={r,c};lvMoves++;
+  const dur=Math.min(420,Math.max(170,steps*80));
+  let mv=$('maveli');
+  mv.style.transitionDuration=dur+'ms';
+  mv.style.transform=`translate(${c*100}px,${r*100}px)`;
+  sSlide();
+  if(got){
+    const el=document.querySelector(`.dish[data-k="${got[0]}"]`);
+    setTimeout(()=>{if(el)el.classList.add('pop');sDish(lvGot);},Math.max(60,dur-120));
+  }
+  const before=lvGot;
+  if(got)lvGot++;
+  setTimeout(()=>{
+    busy=false;
+    if(got){
+      draw();
+      const D=COURSES[li].items[got[1]];
+      toast(D[0],D[3]);
+    }
+    hud();
+    if(before<lvTotal&&lvGot>=lvTotal){sOpen();setTimeout(()=>toast('The leaf is full — go sit down'),got?2150:0);}
+    else if(!got&&stuck){sStick();toast('Stuck in the payasam');}
+    if(r===goal.r&&c===goal.c){
+      if(lvGot>=lvTotal)finishLevel();
+      else toast(`${lvTotal-lvGot} dish${lvTotal-lvGot>1?'es':''} still on the floor`);
+    }
+  },dur+40);
+}
+
+function finishLevel(){
+  totalMoves+=lvMoves;
+  setTimeout(()=>{
+    if(li===LEVELS.length-1){showEnd();return;}
+    sWin();
+    const p=PAR[li],diff=lvMoves-p;
+    $('lvTitle').textContent=diff<=0?'Perfect line':(diff<=4?'Course served':'He got there eventually');
+    $('lvStat').innerHTML=`${lvMoves}<em>moves · best possible ${p}</em>`;
+    $('lvNote').textContent=diff<=0
+      ?'The shortest route there is. Maveli is impressed.'
+      :`${diff} more than the best possible route. Running total: ${totalMoves}.`;
+    $('ovDone').classList.add('on');
+  },500);
+}
+
+/* ---------- end card ---------- */
+function drawLeaf(){
+  let s=`<defs><linearGradient id="gl" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#63BC6E"/><stop offset="1" stop-color="#2C7239"/></linearGradient>
+    <filter id="lsh"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0E2A14" flood-opacity=".45"/></filter></defs>`;
+  s+=`<g filter="url(#lsh)">${bananaLeaf(170,108,320,180,'')}</g>`;
+  const rows=[[[0,1,2],-44,21],[[3,4],48,21]];
+  rows.forEach(([courses,dy,step])=>{
+    const flat=[]; courses.forEach(ci=>COURSES[ci].items.forEach(it=>flat.push(it)));
+    let x=170-(flat.length*step)/2+step/2;
+    flat.forEach(it=>{
+      s+=`<rect x="${x-9}" y="${108+dy-9}" width="18" height="18" rx="3.6"
+            fill="${it[1]}" stroke="#153F1F" stroke-width="2.2"/>`;
+      x+=step;
+    });
+  });
+  $('leaf').innerHTML=s;
+}
+function makeCode(){
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  const A='ACDEFHJKLMNPQRTUVWXY349';
+  let r='';for(let i=0;i<4;i++)r+=A[Math.floor(Math.random()*A.length)];
+  return `LC-${p(d.getDate())}${p(d.getMonth()+1)}-${r}`;
+}
+function showEnd(){
+  sFinal();drawLeaf();
+  const m=totalMoves,over=m-TOTAL_PAR;
+  let title,note;
+  if(m<=TOTAL_PAR){title='A flawless sadya';note=`${m} moves — the shortest run that exists. Nobody has eaten better.`;}
+  else if(m<=PRIZE_MOVES){title='Maveli approves';note=`${m} moves, only ${over} more than the shortest route possible. All 26 dishes.`;}
+  else if(m<=200){title='Maveli made it eventually';note=`${m} moves. The rasam went cold but nobody said anything.`;}
+  else{title='A very scenic route';note=`${m} moves. Maveli went past the same pappadam four times.`;}
+  $('endTitle').textContent=title;
+  $('endStat').innerHTML=`${m}<em>moves · best possible ${TOTAL_PAR}</em>`;
+  $('endNote').textContent=note;
+  if(m<=PRIZE_MOVES){
+    let c=loadClaim();
+    if(c&&c.used){
+      $('btnClaim').style.display='none';
+      $('endHook').textContent='You have already claimed today. Come back tomorrow and try to beat this score.';
+    }else{
+      if(!c){c={code:makeCode(),moves:m,day:todayKey(),used:false};saveClaim(c);}
+      claimCode=c.code;
+      $('btnClaim').style.display='';
+      $('endHook').textContent='A free unniyappam, with any order. It will still be here when you reach the counter.';
+    }
+    refreshBanner();
+  }else{
+    $('btnClaim').style.display='none';
+    $('endHook').textContent=`Finish in ${PRIZE_MOVES} moves or fewer to earn a free unniyappam. You are ${m-PRIZE_MOVES} over.`;
+  }
+  $('handle').textContent=HANDLE;
+  $('ovEnd').classList.add('on');
+}
+
+/* ---------- input ---------- */
+addEventListener('keydown',e=>{
+  const k={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',w:'U',s:'D',a:'L',d:'R',W:'U',S:'D',A:'L',D:'R'}[e.key];
+  if(k){e.preventDefault();move(k);}
+});
+document.querySelectorAll('.pad button').forEach(b=>b.addEventListener('click',()=>move(b.dataset.d)));
+let sx=0,sy=0,sw=false;const st=$('stage');
+st.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;sw=true;},{passive:true});
+st.addEventListener('touchmove',e=>{if(sw)e.preventDefault();},{passive:false});
+st.addEventListener('touchend',e=>{
+  if(!sw)return;sw=false;
+  const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
+  move(Math.abs(dx)>Math.abs(dy)?(dx>0?'R':'L'):(dy>0?'D':'U'));
+});
+st.addEventListener('mousedown',e=>{sx=e.clientX;sy=e.clientY;sw=true;});
+st.addEventListener('mouseup',e=>{
+  if(!sw)return;sw=false;
+  const dx=e.clientX-sx,dy=e.clientY-sy;
+  if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
+  move(Math.abs(dx)>Math.abs(dy)?(dx>0?'R':'L'):(dy>0?'D':'U'));
+});
+
+/* ---------- buttons ---------- */
+$('btnStart').onclick=()=>{try{actx().resume();}catch(e){}$('ovIntro').classList.remove('on');showSection(0);};
+$('btnBegin').onclick=()=>{$('ovSection').classList.remove('on');started=true;};
+$('btnNext').onclick=()=>{$('ovDone').classList.remove('on');started=false;load(li+1);showSection(li);};
+$('btnShare').onclick=shareScore;
+$('btnClaim').onclick=openClaim;
+$('btnBack').onclick=closeClaim;
+$('btnBanner').onclick=openClaim;
+$('btnUsed').onclick=()=>{
+  const c=loadClaim(); if(c){c.used=true;saveClaim(c);}
+  refreshBanner(); closeClaim();
+  $('btnClaim').style.display='none';
+  $('endHook').textContent='Claimed. Enjoy the unniyappam.';
+};
+$('btnAgain').onclick=()=>{closeClaim();$('ovEnd').classList.remove('on');totalMoves=0;started=false;load(0);showSection(0);};
+$('btnReset').onclick=()=>{load(li);};
+$('btnSound').onclick=e=>{sound=!sound;e.target.textContent='Sound: '+(sound?'on':'off');};
+
+/* the claim must outlive a reload: won at home, redeemed at the counter */
+const STORE='lechaaya_claim_v1';
+const todayKey=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
+function loadClaim(){
+  try{const r=JSON.parse(localStorage.getItem(STORE)||'null');
+    if(!r)return null;
+    if(r.day!==todayKey()){localStorage.removeItem(STORE);return null;}
+    return r;}catch(e){return null;}
+}
+function saveClaim(o){try{localStorage.setItem(STORE,JSON.stringify(o));}catch(e){}}
+function refreshBanner(){const c=loadClaim();$('banner').classList.toggle('on',!!(c&&!c.used));}
+let claimTimer=null,claimCode=null;
+function openClaim(){
+  const c=loadClaim();
+  claimCode=(c&&c.code)||claimCode||makeCode();
+  $('claimCode').textContent=claimCode;
+  $('claimDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
+  const tick=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');
+    $('claimClock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;};
+  tick(); clearInterval(claimTimer); claimTimer=setInterval(tick,1000);
+  $('ovClaim').classList.add('on');
+}
+function closeClaim(){clearInterval(claimTimer);claimTimer=null;$('ovClaim').classList.remove('on');}
+async function shareScore(){
+  const txt=`I got Maveli to the sadya in ${totalMoves} moves. Beat that.`;
+  if(navigator.share){
+    try{ await navigator.share({title:"Maveli's Sadya Run",text:txt,url:GAME_URL}); return; }catch(e){ if(e.name==='AbortError')return; }
+  }
+  try{ await navigator.clipboard.writeText(txt+' '+GAME_URL);
+    const b=$('btnShare'),o=b.textContent; b.textContent='Copied!'; setTimeout(()=>b.textContent=o,1600);
+  }catch(e){}
+}
+function buildRules(){
+  const defs=`<defs>
+    <linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5CE71"/><stop offset="1" stop-color="#C58F24"/></linearGradient>
+    <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#63BC6E"/><stop offset="1" stop-color="#2F7C3E"/></linearGradient></defs>`;
+  const ico=inner=>`<svg viewBox="0 0 100 100">${defs}${inner}</svg>`;
+  const rows=[
+    [ico(maveliSVG()),'<b>Maveli.</b> Swipe, and the sliding only stops at a wall, a spill, or the leaf.'],
+    [ico(dishBlock(50,50,1.5,'#C4622C')),'<b>A dish.</b> Slide over it to sweep it up. Only one per slide.'],
+    [ico(payasamSpill(50,52,1.35)),'<b>Spilled payasam.</b> It stops the slide dead — use it to turn a corner.'],
+    [ico(bananaLeaf(50,50,92,58,'')),'<b>The sadya.</b> Locked until every dish on that course is collected.']
+  ];
+  $('rules').innerHTML=rows.map(([i,t])=>`<div>${i}<p>${t}</p></div>`).join('');
+}
+buildRules();
+refreshBanner();
+load(0);
+</script>
+</body>
+</html>
