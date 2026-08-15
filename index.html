@@ -21,9 +21,19 @@ body{
   min-height:100dvh;
   background:radial-gradient(120% 80% at 50% 0%,#FBC46A 0%,var(--marigold) 45%,var(--marigold-lo) 100%);
   font-family:'Nunito','Trebuchet MS',system-ui,sans-serif;color:var(--ink);
-  display:flex;align-items:center;justify-content:center;padding:12px 10px 18px;
+  display:flex;justify-content:center;
+  padding:max(10px,env(safe-area-inset-top)) 10px max(14px,env(safe-area-inset-bottom));
 }
-.wrap{width:100%;max-width:430px}
+/* board sits at the bottom, where a thumb actually reaches */
+.wrap{width:100%;max-width:430px;display:flex;flex-direction:column;min-height:100%}
+.stage{margin-top:auto}
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:9px}
+.tools{display:flex;gap:6px;flex:0 0 auto}
+.tools button{width:40px;height:40px;border-radius:13px;border:0;cursor:pointer;
+  font-size:19px;line-height:1;color:var(--maroon);background:rgba(255,246,226,.92);
+  box-shadow:0 3px 0 rgba(120,60,20,.38)}
+.tools button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(120,60,20,.38)}
+.tools button.off{color:#B08E6E;text-decoration:line-through}
 .banner{display:none;align-items:center;justify-content:space-between;gap:9px;
   background:linear-gradient(180deg,#FFF6E2,#F2E1B8);border-radius:14px;padding:8px 9px 8px 13px;
   margin-bottom:9px;box-shadow:0 3px 0 var(--sand-lo),0 7px 14px rgba(90,40,10,.25)}
@@ -33,7 +43,7 @@ body{
 .banner button{border:0;border-radius:99px;padding:8px 14px;font-family:'Baloo 2',sans-serif;
   font-weight:800;font-size:12.5px;white-space:nowrap;cursor:pointer;
   background:linear-gradient(180deg,var(--gold-hi),var(--gold));color:#4A2708;box-shadow:0 3px 0 #A87A22}
-.masthead{text-align:center;margin-bottom:8px}
+.masthead{text-align:left;flex:1 1 auto;min-width:0}
 .masthead h1{
   font-family:'Baloo 2','Trebuchet MS',system-ui,sans-serif;font-weight:800;
   font-size:clamp(23px,6.8vw,33px);line-height:1;margin:0;color:#FFF6E2;
@@ -98,17 +108,6 @@ body{
 .hook{background:rgba(255,240,200,.13);border:2px dashed rgba(255,225,150,.5);border-radius:13px;
   padding:9px 12px;font-size:12px;color:#FFE9A8;font-weight:700;line-height:1.45;max-width:33ch}
 .handle{font-size:10.5px;letter-spacing:2.2px;text-transform:uppercase;color:#8FC796;font-weight:800}
-.controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px}
-.pad{display:grid;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(2,40px);gap:5px}
-.pad button{border:0;border-radius:12px;background:rgba(255,246,226,.9);color:var(--maroon);font-size:16px;
-  font-weight:800;cursor:pointer;box-shadow:0 3px 0 rgba(120,60,20,.4)}
-.pad button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(120,60,20,.4)}
-.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .d{grid-area:2/2}.pad .r{grid-area:2/3}
-.mini{display:flex;flex-direction:column;gap:6px}
-.mini button{border:0;border-radius:12px;padding:8px 12px;font-size:11px;font-weight:800;letter-spacing:.6px;
-  text-transform:uppercase;cursor:pointer;background:rgba(255,246,226,.9);color:var(--ink-soft);
-  box-shadow:0 3px 0 rgba(120,60,20,.35)}
-.legend{margin-top:8px;text-align:center;font-size:11px;font-weight:700;color:#7A3410;line-height:1.5}
 .leafwrap{width:min(300px,74vw)}
 @media (prefers-reduced-motion:reduce){#maveli{transition:none}.pop{animation:none;opacity:0}.shake,.ready{animation:none}}
 </style>
@@ -120,7 +119,13 @@ body{
     <button id="btnBanner">Show at counter</button>
   </div>
 
-  <div class="masthead"><h1>Maveli's Sadya Run</h1><p>Le Chaaya · Onam 2026</p></div>
+  <div class="topbar">
+    <div class="masthead"><h1>Maveli's Sadya Run</h1><p>Le Chaaya · Onam 2026</p></div>
+    <div class="tools">
+      <button id="btnReset" title="Restart this course" aria-label="Restart this course">↻</button>
+      <button id="btnSound" title="Sound" aria-label="Toggle sound">♪</button>
+    </div>
+  </div>
 
   <div class="hud">
     <div class="stat"><b id="hLevel">1/5</b><span>Course</span></div>
@@ -132,7 +137,7 @@ body{
     <svg id="board" viewBox="0 0 700 700" aria-label="Maze"></svg>
     <div class="toast" id="toast"></div>
 
-    <div class="overlay on" id="ovIntro">
+    <div class="overlay full on" id="ovIntro">
       <h2>Maveli's late for the sadya</h2>
       <p><b>Swipe in any direction.</b> Maveli keeps sliding until something gets in the way — no stopping halfway.</p>
       <div class="rules" id="rules"></div>
@@ -140,7 +145,7 @@ body{
       <button class="btn" id="btnStart">Start the run</button>
     </div>
 
-    <div class="overlay" id="ovSection">
+    <div class="overlay full" id="ovSection">
       <div class="eyebrow" id="secNum">Course 1 of 5</div>
       <h2 id="secTitle"></h2>
       <p id="secDesc"></p>
@@ -148,7 +153,7 @@ body{
       <button class="btn" id="btnBegin">Serve it</button>
     </div>
 
-    <div class="overlay" id="ovDone">
+    <div class="overlay full" id="ovDone">
       <h2 id="lvTitle">Leaf full</h2>
       <div class="big" id="lvStat"></div>
       <p id="lvNote"></p>
@@ -183,19 +188,7 @@ body{
     </div>
   </div>
 
-  <div class="controls">
-    <div class="pad">
-      <button class="u" data-d="U" aria-label="Up">▲</button>
-      <button class="l" data-d="L" aria-label="Left">◀</button>
-      <button class="d" data-d="D" aria-label="Down">▼</button>
-      <button class="r" data-d="R" aria-label="Right">▶</button>
-    </div>
-    <div class="mini">
-      <button id="btnReset">Restart course</button>
-      <button id="btnSound">Sound: on</button>
-    </div>
-  </div>
-  <div class="legend">Swipe the board, use arrow keys, or tap the pad.</div>
+
 </div>
 
 <script>
@@ -547,7 +540,6 @@ addEventListener('keydown',e=>{
   const k={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',w:'U',s:'D',a:'L',d:'R',W:'U',S:'D',A:'L',D:'R'}[e.key];
   if(k){e.preventDefault();move(k);}
 });
-document.querySelectorAll('.pad button').forEach(b=>b.addEventListener('click',()=>move(b.dataset.d)));
 let sx=0,sy=0,sw=false;const st=$('stage');
 st.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;sw=true;},{passive:true});
 st.addEventListener('touchmove',e=>{if(sw)e.preventDefault();},{passive:false});
@@ -581,7 +573,7 @@ $('btnUsed').onclick=()=>{
 };
 $('btnAgain').onclick=()=>{closeClaim();$('ovEnd').classList.remove('on');totalMoves=0;started=false;load(0);showSection(0);};
 $('btnReset').onclick=()=>{load(li);};
-$('btnSound').onclick=e=>{sound=!sound;e.target.textContent='Sound: '+(sound?'on':'off');};
+$('btnSound').onclick=e=>{sound=!sound;e.currentTarget.classList.toggle('off',!sound);};
 
 /* the claim must outlive a reload: won at home, redeemed at the counter */
 const STORE='lechaaya_claim_v1';
