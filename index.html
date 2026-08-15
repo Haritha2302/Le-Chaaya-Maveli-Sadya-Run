@@ -610,14 +610,35 @@ function openClaim(){
   $('ovClaim').classList.add('on');
 }
 function closeClaim(){clearInterval(claimTimer);claimTimer=null;$('ovClaim').classList.remove('on');}
+function flashShare(label){
+  const b=$('btnShare'),o='Share score';
+  b.textContent=label; setTimeout(()=>b.textContent=o,1800);
+}
+function legacyCopy(text){
+  /* navigator.clipboard is secure-context only, so keep a plain-HTTP path */
+  try{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.setAttribute('readonly','');
+    ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,ta.value.length);
+    const ok=document.execCommand('copy');
+    document.body.removeChild(ta); return ok;
+  }catch(e){ return false; }
+}
 async function shareScore(){
   const txt=`I got Maveli to the sadya in ${totalMoves} moves. Beat that.`;
+  const full=txt+' '+GAME_URL;
   if(navigator.share){
-    try{ await navigator.share({title:"Maveli's Sadya Run",text:txt,url:GAME_URL}); return; }catch(e){ if(e.name==='AbortError')return; }
+    try{ await navigator.share({title:"Maveli's Sadya Run",text:txt,url:GAME_URL}); return; }
+    catch(e){ if(e.name==='AbortError') return; }
   }
-  try{ await navigator.clipboard.writeText(txt+' '+GAME_URL);
-    const b=$('btnShare'),o=b.textContent; b.textContent='Copied!'; setTimeout(()=>b.textContent=o,1600);
-  }catch(e){}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    try{ await navigator.clipboard.writeText(full); flashShare('Copied!'); return; }catch(e){}
+  }
+  if(legacyCopy(full)){ flashShare('Copied!'); return; }
+  /* last resort: put it on screen so it can be copied by hand */
+  $('endNote').textContent=full;
+  flashShare('Copy the text above');
 }
 function buildRules(){
   const defs=`<defs>
