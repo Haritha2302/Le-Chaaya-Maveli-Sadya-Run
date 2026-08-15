@@ -24,9 +24,14 @@ body{
   display:flex;justify-content:center;
   padding:max(10px,env(safe-area-inset-top)) 10px max(14px,env(safe-area-inset-bottom));
 }
-/* board sits at the bottom, where a thumb actually reaches */
-.wrap{width:100%;max-width:430px;display:flex;flex-direction:column;min-height:100%}
-.stage{margin-top:auto}
+/* phones: the whole block hugs the bottom so the board is thumb-height,
+   and the header rides just above it instead of stranding a gap.
+   Wider screens: centre it the old way. */
+.wrap{width:100%;max-width:430px;display:flex;flex-direction:column;
+  min-height:100%;justify-content:flex-end}
+@media (min-width:560px),(hover:hover) and (pointer:fine){
+  .wrap{justify-content:center}
+}
 .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:9px}
 .tools{display:flex;gap:6px;flex:0 0 auto}
 .tools button{width:40px;height:40px;border-radius:13px;border:0;cursor:pointer;
