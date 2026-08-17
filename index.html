@@ -152,7 +152,7 @@ body{
       <h2>Maveli is late for the sadya</h2>
       <p><b>Swipe in any direction.</b> Maveli keeps sliding until something gets in the way - no stopping halfway.</p>
       <div class="rules" id="rules"></div>
-      <p>Five courses, 26 dishes. <b>Fewest moves wins</b> - the shortest run possible is 114.</p>
+      <p>Five courses, 26 dishes. <b>Fewest moves wins</b> - the shortest path possible is 114 moves.</p>
       <button class="btn" id="btnStart">Start</button>
     </div>
 
@@ -649,9 +649,9 @@ function buildRules(){
     <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#63BC6E"/><stop offset="1" stop-color="#2F7C3E"/></linearGradient></defs>`;
   const ico=inner=>`<svg viewBox="0 0 100 100">${defs}${inner}</svg>`;
   const rows=[
-    [ico(maveliSVG()),'<b>Maveli.</b> Swipe, and the sliding only stops at a wall, a spill, or the leaf.'],
+    [ico(maveliSVG()),'<b>Maveli.</b> Swipe, and the sliding only stops at a wall, a payasam spill, or the leaf.'],
     [ico(dishBlock(50,50,1.5,'#C4622C')),'<b>A dish.</b> Slide over it to sweep it up. Only one per slide.'],
-    [ico(payasamSpill(50,52,1.35)),'<b>Spilled payasam.</b> It stops the slide dead — use it to turn a corner.'],
+    [ico(payasamSpill(50,52,1.35)),'<b>Spilled payasam.</b> It stops the slide midway — use it to turn a corner.'],
     [ico(bananaLeaf(50,50,92,58,'')),'<b>The sadya.</b> Locked until every dish on that course is collected.']
   ];
   $('rules').innerHTML=rows.map(([i,t])=>`<div>${i}<p>${t}</p></div>`).join('');
