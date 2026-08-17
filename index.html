@@ -16,7 +16,7 @@
   --ink:#33200F;--ink-soft:#6B4A2C;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;overscroll-behavior:none}
 body{
   min-height:100dvh;
   background:radial-gradient(120% 80% at 50% 0%,#FBC46A 0%,var(--marigold) 45%,var(--marigold-lo) 100%);
@@ -551,22 +551,26 @@ addEventListener('keydown',e=>{
   const k={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',w:'U',s:'D',a:'L',d:'R',W:'U',S:'D',A:'L',D:'R'}[e.key];
   if(k){e.preventDefault();move(k);}
 });
-let sx=0,sy=0,sw=false;const st=$('stage');
-st.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;sw=true;},{passive:true});
-st.addEventListener('touchmove',e=>{if(sw)e.preventDefault();},{passive:false});
-st.addEventListener('touchend',e=>{
-  if(!sw)return;sw=false;
-  const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+
+const overlayOpen=()=>!!document.querySelector('.overlay.on');
+let sx=0,sy=0,sw=false;
+function swipeStart(x,y,t){
+  if(overlayOpen()||(t&&t.closest&&t.closest('button'))){sw=false;return;}
+  sx=x;sy=y;sw=true;
+}
+function swipeEnd(x,y){
+  if(!sw)return; sw=false;
+  if(overlayOpen())return;
+  const dx=x-sx,dy=y-sy;
   if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
   move(Math.abs(dx)>Math.abs(dy)?(dx>0?'R':'L'):(dy>0?'D':'U'));
-});
-st.addEventListener('mousedown',e=>{sx=e.clientX;sy=e.clientY;sw=true;});
-st.addEventListener('mouseup',e=>{
-  if(!sw)return;sw=false;
-  const dx=e.clientX-sx,dy=e.clientY-sy;
-  if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;
-  move(Math.abs(dx)>Math.abs(dy)?(dx>0?'R':'L'):(dy>0?'D':'U'));
-});
+}
+document.addEventListener('touchstart',e=>swipeStart(e.touches[0].clientX,e.touches[0].clientY,e.target),{passive:true});
+document.addEventListener('touchmove',e=>{ if(sw&&!overlayOpen()) e.preventDefault(); },{passive:false});
+document.addEventListener('touchend',e=>swipeEnd(e.changedTouches[0].clientX,e.changedTouches[0].clientY));
+document.addEventListener('touchcancel',()=>{sw=false;});
+document.addEventListener('mousedown',e=>swipeStart(e.clientX,e.clientY,e.target));
+document.addEventListener('mouseup',e=>swipeEnd(e.clientX,e.clientY));
 
 /* ---------- buttons ---------- */
 $('btnStart').onclick=()=>{try{actx().resume();}catch(e){}$('ovIntro').classList.remove('on');showSection(0);};
