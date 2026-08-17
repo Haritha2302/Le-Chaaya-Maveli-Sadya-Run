@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Maveli's Sadya Run — Le Chaaya</title>
+<title>Maveli's Sadya Ottam - Le Chaaya</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
@@ -131,7 +131,7 @@ body{
   <div class="sp sp-a"></div>
 
   <div class="topbar">
-    <div class="masthead"><h1>Maveli's Sadya Run</h1><p>Le Chaaya · Onam 2026</p></div>
+    <div class="masthead"><h1>Maveli's Sadya Ottam</h1><p>Le Chaaya · Onam 2026</p></div>
     <div class="tools">
       <button id="btnReset" title="Restart this course" aria-label="Restart this course">↻</button>
       <button id="btnSound" title="Sound" aria-label="Toggle sound">♪</button>
@@ -149,11 +149,11 @@ body{
     <div class="toast" id="toast"></div>
 
     <div class="overlay full on" id="ovIntro">
-      <h2>Maveli's late for the sadya</h2>
-      <p><b>Swipe in any direction.</b> Maveli keeps sliding until something gets in the way — no stopping halfway.</p>
+      <h2>Maveli is late for the sadya</h2>
+      <p><b>Swipe in any direction.</b> Maveli keeps sliding until something gets in the way - no stopping halfway.</p>
       <div class="rules" id="rules"></div>
-      <p>Five courses, 26 dishes. <b>Fewest moves wins</b> — the shortest run possible is 114.</p>
-      <button class="btn" id="btnStart">Start the run</button>
+      <p>Five courses, 26 dishes. <b>Fewest moves wins</b> - the shortest run possible is 114.</p>
+      <button class="btn" id="btnStart">Start</button>
     </div>
 
     <div class="overlay full" id="ovSection">
@@ -191,9 +191,8 @@ body{
       <div class="clock" id="claimClock">00:00:00</div>
       <p class="eyebrow" id="claimDate"></p>
       <div class="hook">Free unniyappam <b>with any order</b>. One per person per day.</div>
-      <p><b>Staff:</b> the clock must be <b>ticking</b>. A screenshot is frozen.</p>
       <div class="row">
-        <button class="btn" id="btnUsed">Mark used</button>
+        <button class="btn" id="btnUsed">Unniyappam Claimed</button>
         <button class="btn ghost" id="btnBack">Back</button>
       </div>
     </div>
@@ -223,41 +222,41 @@ const TOTAL_PAR=114;
 /* The five courses of a sadya, in the order they hit the leaf */
 const COURSES=[
  {t:"The tip of the leaf",
-  d:"Every sadya starts here. Pickles go at the narrow tip, in tiny amounts — they're there to wake the tongue up, not to be eaten on their own.",
+  d:"Every sadya starts here. Pickles go at the left end of the leaf, in tiny amounts. Some say they're there to wake the tongue up.",
   items:[["Injipuli","#5C3218","lump","ginger, tamarind, jaggery"],
          ["Manga achar","#B4432A","lump","raw mango pickle"]]},
  {t:"Upperi — the crunch",
-  d:"Fried and set along the top edge. You eat these with your fingers, all through the meal, whenever the rice gets too serious.",
-  items:[["Pappadam","#F0D89A","disc","cracked over the rice"],
-         ["Kaya upperi","#EFC24E","pile","banana chips in coconut oil"],
-         ["Sharkara varatti","#8A5220","lump","jaggery-coated banana"],
+  d:"Fried and set along the top edge. You eat these throughout the meal, or finish it off before the rice is even served.",
+  items:[["Pappadam","#F0D89A","disc","onnil kooduthal kittiyaal bhaagyam"],
+         ["Kaya upperi","#EFC24E","pile","banana chips"],
+         ["Sharkara varatti","#8A5220","lump","banana chips evolved form"],
          ["Chena varuthathu","#C79A44","pile","fried yam"]]},
  {t:"The vegetable curries",
-  d:"The body of the meal, laid across the top of the leaf. Mostly coconut and curd, barely any chilli — each one a different texture.",
-  items:[["Thoran","#6FA84A","pile","dry, with grated coconut"],
-         ["Mezhukkupuratti","#4E8C3A","pile","stir-fried, glossy"],
-         ["Avial","#C9D98E","bowl","the famous mixed one"],
+  d:"The body of the meal, laid across the top of the leaf. Everyone has a favourite (cabbage thoran perhaps?), and one that you never finish (olan?).",
+  items:[["Thoran","#6FA84A","pile","almost always cabbage"],
+         ["Mezhukkupuratti","#4E8C3A","pile","payar, kaya, chena..."],
+         ["Avial","#C9D98E","bowl","everything all at once"],
          ["Olan","#E8E4C8","bowl","ash gourd in coconut milk"],
          ["Erissery","#D89A3E","bowl","pumpkin and beans"],
          ["Kaalan","#EBD07A","bowl","curd, thick and sour"]]},
  {t:"Choru, and what's poured on it",
-  d:"Rice lands in the middle and the curries go over it in strict order — parippu with ghee first, then sambar, then rasam, then pulissery. Never out of turn.",
+  d:"Rice lands in the middle and the curries go over it in strict order — parippu with ghee first, then sambar, then pulissery, then rasam, then moru (if you still have space in your stomach).",
   items:[["Choru","#FBF3DE","pile","the rice itself"],
-         ["Neyy","#F5D96B","lump","ghee, over the parippu"],
          ["Parippu","#E8B93C","bowl","dal, served first"],
-         ["Sambar","#C4622C","bowl","second, with vegetables"],
-         ["Rasam","#B03A28","bowl","third, thin and peppery"],
-         ["Pulissery","#F2E6C2","bowl","fourth, curd-based"]]},
+         ["Sambar","#C4622C","bowl","second, enthinokkeyo vendi thilakkunnu"],
+         ["Pulissery","#F2E6C2","bowl","third, sour curd"],
+         ["Rasam","#B03A28","bowl","fourth, ithu nirbandha!"],
+         ["Moru","#F9F6EF","lump","fifth, buttermilk"],]},
  {t:"Payasam — the sweet end",
-  d:"Served on the same leaf, pushed to a clean corner. Two or three is normal. Eight is showing off, which is exactly the point.",
-  items:[["Ada pradhaman","#7A4426","bowl","rice ada in jaggery"],
+  d:"Served on the same leaf, if you're a professional. Or you could ask for it in a paper cup. Two or three is normal. Eight is showing off, which is exactly the point.",
+  items:[["Ada pradhaman","#7A4426","bowl","the one you're looking for"],
          ["Palada payasam","#F3DCC0","bowl","milk and ada"],
          ["Parippu pradhaman","#B5762E","bowl","moong dal and jaggery"],
          ["Chakka pradhaman","#C98A2E","bowl","jackfruit"],
-         ["Pal payasam","#FBF0DC","bowl","slow-cooked milk rice"],
+         ["Pal payasam","#FBF0DC","bowl","aahaha entha swaadhu"],
          ["Semiya payasam","#F6E3C4","bowl","vermicelli"],
-         ["Pazham","#F2C230","lump","banana, to mash into it"],
-         ["Boli","#EFD07E","disc","soft, sweet, folded"]]}
+         ["Pazham","#F2C230","lump","banana"],
+         ["Boli","#EFD07E","disc","soft & sweet"]]}
 ];
 
 let li=0,grid=[],dishes=new Map(),pos={r:0,c:0},goal={r:0,c:0};
@@ -467,7 +466,7 @@ function move(d){
       toast(D[0],D[3]);
     }
     hud();
-    if(before<lvTotal&&lvGot>=lvTotal){sOpen();setTimeout(()=>toast('The leaf is full — go sit down'),got?2150:0);}
+    if(before<lvTotal&&lvGot>=lvTotal){sOpen();setTimeout(()=>toast('The leaf is full - go sit down'),got?2150:0);}
     else if(!got&&stuck){sStick();toast('Stuck in the payasam');}
     if(r===goal.r&&c===goal.c){
       if(lvGot>=lvTotal)finishLevel();
@@ -519,7 +518,7 @@ function showEnd(){
   sFinal();drawLeaf();
   const m=totalMoves,over=m-TOTAL_PAR;
   let title,note;
-  if(m<=TOTAL_PAR){title='A flawless sadya';note=`${m} moves — the shortest run that exists. Nobody has eaten better.`;}
+  if(m<=TOTAL_PAR){title='A flawless sadya';note=`${m} moves - the shortest run that exists. Nobody has eaten better.`;}
   else if(m<=PRIZE_MOVES){title='Maveli approves';note=`${m} moves, only ${over} more than the shortest route possible. All 26 dishes.`;}
   else if(m<=200){title='Maveli made it eventually';note=`${m} moves. The rasam went cold but nobody said anything.`;}
   else{title='A very scenic route';note=`${m} moves. Maveli went past the same pappadam four times.`;}
