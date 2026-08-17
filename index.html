@@ -124,7 +124,7 @@ body{
 <body>
 <div class="wrap">
   <div class="banner" id="banner">
-    <span><b>Free unniyappam</b> waiting for you</span>
+    <span id="bannerTxt"><b>Free unniyappam</b> waiting for you</span>
     <button id="btnBanner">Show at counter</button>
   </div>
 
@@ -208,6 +208,7 @@ body{
 const PRIZE_MOVES = 125;        // finish at or under this and a code is issued
 const HANDLE      = '@lechaaya';
 const GAME_URL    = 'https://mavelisadyarun.lechaaya.in';   // where you host this file
+const CLAIM_HOURS = 24;      // how long a won unniyappam stays claimable
 /* ======================================== */
 
 /* Levels: verified full-clear, no softlocks, and never more than one dish per slide */
@@ -533,7 +534,7 @@ function showEnd(){
       $('btnClaim').style.display='none';
       $('endHook').textContent='You have already claimed today. Come back tomorrow and try to beat this score.';
     }else{
-      if(!c){c={code:makeCode(),moves:m,day:todayKey(),used:false};saveClaim(c);}
+      if(!c){c={code:makeCode(),moves:m,ts:Date.now(),used:false};saveClaim(c);}
       claimCode=c.code;
       $('btnClaim').style.display='';
       $('endHook').textContent='A free unniyappam, with any order. It will still be here when you reach the counter.';
@@ -592,25 +593,34 @@ $('btnReset').onclick=()=>{load(li);};
 $('btnSound').onclick=e=>{sound=!sound;e.currentTarget.classList.toggle('off',!sound);};
 
 /* the claim must outlive a reload: won at home, redeemed at the counter */
-const STORE='lechaaya_claim_v1';
-const todayKey=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;};
+const STORE='lechaaya_claim_v2';
+const msLeft=c=>c.ts+CLAIM_HOURS*3600e3-Date.now();
 function loadClaim(){
   try{const r=JSON.parse(localStorage.getItem(STORE)||'null');
-    if(!r)return null;
-    if(r.day!==todayKey()){localStorage.removeItem(STORE);return null;}
+    if(!r||!r.ts)return null;
+    if(msLeft(r)<=0){localStorage.removeItem(STORE);return null;}
     return r;}catch(e){return null;}
 }
+function leftLabel(c){
+  const t=msLeft(c), h=Math.floor(t/3600e3), m=Math.floor(t/60e3)%60;
+  return h>0 ? `${h}h ${m}m left` : `${m}m left`;
+}
 function saveClaim(o){try{localStorage.setItem(STORE,JSON.stringify(o));}catch(e){}}
-function refreshBanner(){const c=loadClaim();$('banner').classList.toggle('on',!!(c&&!c.used));}
+function refreshBanner(){
+  const c=loadClaim(), live=!!(c&&!c.used);
+  $('banner').classList.toggle('on',live);
+  if(live) $('bannerTxt').innerHTML=`<b>Free unniyappam</b> waiting · ${leftLabel(c)}`;
+}
 let claimTimer=null,claimCode=null;
 function openClaim(){
   const c=loadClaim();
   claimCode=(c&&c.code)||claimCode||makeCode();
   $('claimCode').textContent=claimCode;
-  $('claimDate').textContent=new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'});
   const tick=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');
-    $('claimClock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;};
+  $('claimClock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const cc=loadClaim();
+  $('claimDate').textContent = cc ? leftLabel(cc).toUpperCase() : 'EXPIRED';
+  if(!cc){clearInterval(claimTimer);refreshBanner();}};
   tick(); clearInterval(claimTimer); claimTimer=setInterval(tick,1000);
   $('ovClaim').classList.add('on');
 }
