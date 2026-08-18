@@ -102,6 +102,31 @@ body{
 .rules svg{flex:0 0 42px;width:42px;height:42px}
 .rules p{font-size:12.5px;margin:0;max-width:none}
 .rules b{color:#FFE9A8}
+
+.claimbox{display:none;flex-direction:column;align-items:center;gap:9px;
+  background:rgba(255,240,200,.15);border:2px dashed rgba(255,225,150,.55);
+  border-radius:15px;padding:12px 15px;max-width:34ch}
+.claimbox.on{display:flex}
+.claimbox p{font-size:12.5px;color:#FFE9A8;margin:0}
+.claimbox b{color:#FFF6E2}
+.welcomefig{width:118px;height:auto}
+.pitch{font-size:15px !important;line-height:1.5;max-width:27ch}
+.demo{width:min(330px,84vw);height:auto}
+.demowrap{background:rgba(0,0,0,.16);border-radius:16px;padding:10px 8px}
+.demohint{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#8FC796;margin-top:6px}
+@keyframes dmSlide{0%,16%{transform:translateX(0)}42%,84%{transform:translateX(360px)}92%,100%{transform:translateX(0)}}
+@keyframes dmDish{0%,30%{opacity:1;transform:scale(1)}38%{opacity:0;transform:scale(1.5)}88%{opacity:0;transform:scale(1)}95%,100%{opacity:1;transform:scale(1)}}
+@keyframes dmHand{0%{opacity:0;transform:translateX(0)}6%{opacity:.95}30%{opacity:.95;transform:translateX(215px)}40%{opacity:0;transform:translateX(215px)}100%{opacity:0;transform:translateX(0)}}
+@keyframes dmTrail{0%,6%{opacity:0;stroke-dashoffset:230}30%{opacity:.85;stroke-dashoffset:0}44%{opacity:0}100%{opacity:0}}
+.dm-mv{animation:dmSlide 4.2s cubic-bezier(.3,.05,.2,1) infinite}
+.dm-dish{animation:dmDish 4.2s ease infinite;transform-origin:323px 60px}
+.dm-hand{animation:dmHand 4.2s ease infinite}
+.dm-trail{stroke-dasharray:230;animation:dmTrail 4.2s ease infinite}
+@media (prefers-reduced-motion:reduce){
+  .dm-mv,.dm-dish,.dm-hand,.dm-trail{animation:none}
+  .dm-trail{opacity:.85;stroke-dashoffset:0}
+}
+  
 .menu span{background:rgba(255,240,200,.12);border:1px solid rgba(255,225,150,.3);border-radius:99px;
   padding:4px 10px;font-size:11px;font-weight:700;color:#FFE9A8}
 .btn{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:16px;border:0;border-radius:99px;padding:11px 26px;
@@ -148,10 +173,23 @@ body{
     <svg id="board" viewBox="0 0 700 700" aria-label="Maze"></svg>
     <div class="toast" id="toast"></div>
 
-    <div class="overlay full on" id="ovIntro">
+    <div class="overlay full on" id="ovWelcome">
+      <svg class="welcomefig" id="welcomeFig" viewBox="16 0 68 97"></svg>
+      <h2>Maveli's Sadya Ottam</h2>
+      <p class="pitch">Get Maveli to the sadya in <b>125 moves or fewer</b> and win a free unniyappam with your order.</p>
+      <div class="claimbox" id="welcomeClaim">
+        <p id="welcomeClaimTxt"></p>
+        <button class="btn" id="btnWelcomeClaim">Show at counter</button>
+      </div>
+      <button class="btn" id="btnPlay">Play</button>
+      <p class="handle">Le Chaaya &#183; Onam 2026</p>
+    </div>
+
+    <div class="overlay full" id="ovIntro">
       <h2>Maveli is late for the sadya</h2>
       <p>Help Maveli collect dishes and sit down to his Onasadya.</p>
-      <p></p>
+      <div class="demowrap"><svg class="demo" id="demo" viewBox="0 0 550 130"></svg>
+      <div class="demohint">Swipe anywhere on the screen</div></div>
       <p><b>Swipe in any direction.</b> Maveli keeps sliding until something gets in the way - no stopping halfway.</p>
       <div class="rules" id="rules"></div>
       <p>Five courses, 26 dishes. <b>Fewest moves wins</b> - the shortest path possible is 114 moves.</p>
@@ -575,7 +613,8 @@ document.addEventListener('mousedown',e=>swipeStart(e.clientX,e.clientY,e.target
 document.addEventListener('mouseup',e=>swipeEnd(e.clientX,e.clientY));
 
 /* ---------- buttons ---------- */
-$('btnStart').onclick=()=>{try{actx().resume();}catch(e){}$('ovIntro').classList.remove('on');showSection(0);};
+$('btnPlay').onclick=()=>{try{actx().resume();}catch(e){}$('ovWelcome').classList.remove('on');$('ovIntro').classList.add('on');};
+$('btnStart').onclick=()=>{$('ovIntro').classList.remove('on');showSection(0);};
 $('btnBegin').onclick=()=>{$('ovSection').classList.remove('on');started=true;};
 $('btnNext').onclick=()=>{$('ovDone').classList.remove('on');started=false;load(li+1);showSection(li);};
 $('btnShare').onclick=shareScore;
@@ -591,6 +630,7 @@ $('btnUsed').onclick=()=>{
 $('btnAgain').onclick=()=>{closeClaim();$('ovEnd').classList.remove('on');totalMoves=0;started=false;load(0);showSection(0);};
 $('btnReset').onclick=()=>{load(li);};
 $('btnSound').onclick=e=>{sound=!sound;e.currentTarget.classList.toggle('off',!sound);};
+$('btnWelcomeClaim').onclick=openClaim;
 
 /* the claim must outlive a reload: won at home, redeemed at the counter */
 const STORE='lechaaya_claim_v2';
@@ -607,6 +647,7 @@ function leftLabel(c){
 }
 function saveClaim(o){try{localStorage.setItem(STORE,JSON.stringify(o));}catch(e){}}
 function refreshBanner(){
+  if($('welcomeClaim')) refreshWelcomeClaim();
   const c=loadClaim(), live=!!(c&&!c.used);
   $('banner').classList.toggle('on',live);
   if(live) $('bannerTxt').innerHTML=`<b>Free unniyappam</b> waiting · ${leftLabel(c)}`;
@@ -655,19 +696,49 @@ async function shareScore(){
   $('endNote').textContent=full;
   flashShare('Copy the text above');
 }
+function buildWelcome(){
+  $('welcomeFig').innerHTML =
+    `<defs><linearGradient id="gcw" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5CE71"/><stop offset="1" stop-color="#C58F24"/></linearGradient></defs>`
+    + maveliSVG().replace('url(#gc)','url(#gcw)');
+}
+function buildDemo(){
+  const C=90, y=18;
+  let g=`<defs><linearGradient id="gcd" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5CE71"/><stop offset="1" stop-color="#C58F24"/></linearGradient>
+    <linearGradient id="gwd" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5CB268"/><stop offset="1" stop-color="#2C6B39"/></linearGradient></defs>`;
+  for(let i=0;i<5;i++) g+=`<rect x="${10+i*C}" y="${y}" width="86" height="86" rx="12" fill="#F6E9C6"/>`;
+  g+=`<rect x="${10+5*C}" y="${y}" width="86" height="86" rx="16" fill="url(#gwd)"/>
+      <rect x="${19+5*C}" y="${y+8}" width="68" height="17" rx="8" fill="#7ECB86" opacity=".55"/>`;
+  g+=`<g class="dm-dish">${dishBlock(10+3*C+43, y+43, 0.92, '#C4622C')}</g>`;
+  g+=`<g class="dm-mv"><g transform="translate(10,${y-6}) scale(0.92)">${maveliSVG().replace('url(#gc)','url(#gcd)')}</g></g>`;
+  g+=`<path class="dm-trail" d="M70 112 H285" stroke="#FFE9A8" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <g class="dm-hand">
+        <circle cx="70" cy="112" r="15" fill="#FFF6E2" opacity=".92"/>
+        <circle cx="70" cy="112" r="15" fill="none" stroke="#8E2F3B" stroke-width="3"/></g>`;
+  $('demo').innerHTML=g;
+}
+function refreshWelcomeClaim(){
+  const c=loadClaim(), live=!!(c&&!c.used);
+  $('welcomeClaim').classList.toggle('on',live);
+  if(live) $('welcomeClaimTxt').innerHTML=
+    `You have a <b>free unniyappam</b> waiting.<br>${leftLabel(c)} &#183; with any order.`;
+}
 function buildRules(){
   const defs=`<defs>
     <linearGradient id="gc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F5CE71"/><stop offset="1" stop-color="#C58F24"/></linearGradient>
     <linearGradient id="gl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#63BC6E"/><stop offset="1" stop-color="#2F7C3E"/></linearGradient></defs>`;
   const ico=inner=>`<svg viewBox="0 0 100 100">${defs}${inner}</svg>`;
   const rows=[
-    [ico(maveliSVG()),'<b>Maveli.</b> Swipe, and the sliding only stops at a wall, a payasam spill, or the leaf.'],
     [ico(dishBlock(50,50,1.5,'#C4622C')),'<b>A dish.</b> Slide over it to sweep it up. Only one per slide.'],
     [ico(payasamSpill(50,52,1.35)),'<b>Spilled payasam.</b> It stops the slide midway — use it to turn a corner.'],
     [ico(bananaLeaf(50,50,92,58,'')),'<b>The sadya.</b> Locked until every dish on that course is collected.']
   ];
   $('rules').innerHTML=rows.map(([i,t])=>`<div>${i}<p>${t}</p></div>`).join('');
 }
+buildWelcome();
+buildDemo();
 buildRules();
 refreshBanner();
 load(0);
